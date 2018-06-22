@@ -69,3 +69,7 @@ networks:
     efk:
         driver: bridge
 ```
+
+- - -
+
+RE: Exploring fluentd via EFK Stack for Docker Logging, [http://kelonsoftware.com/fluentd-docker-logging/](http://kelonsoftware.com/fluentd-docker-logging/)
