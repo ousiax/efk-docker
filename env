@@ -1,0 +1,5 @@
+COMPOSE_PROJECT_NAME=efk
+
+ELASTICSEARCH_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:6.3.0
+KIBANA_IMAGE=docker.elastic.co/kibana/kibana:6.3.0
+FLUENTD_IMAGE=qqbuby/fluentd:v1.2-es
