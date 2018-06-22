@@ -3,6 +3,7 @@ version: '2.4'
 services:
     elasticsearch:
         image: ${ELASTICSEARCH_IMAGE}
+        restart: always
         environment:
             - 'discovery.type=single-node'
             - 'bootstrap.memory_lock=true'
@@ -28,14 +29,15 @@ services:
             options:
                 fluentd-address: localhost:24224
                 fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s' 
+                fluentd-retry-wait: '1s'
                 fluentd-max-retries: '30'
                 tag: efk.elasticsearch
 
     kibana:
         image: ${KIBANA_IMAGE}
-        ports:
-            - 5601:5601
+        restart: always
+#        ports:
+#            - 5601:5601
         networks:
             - efk
         depends_on:
@@ -50,7 +52,7 @@ services:
             options:
                 fluentd-address: localhost:24224
                 fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s' 
+                fluentd-retry-wait: '1s'
                 fluentd-max-retries: '30'
                 tag: efk.kibana
 
@@ -63,6 +65,38 @@ services:
             - ./fluentd/etc:/fluentd/etc
         networks:
             - efk
+
+    nginx:
+        image: ${NGINX_IMAGE}
+        restart: always
+        ports:
+            - 80:80
+        volumes:
+            - type: bind
+              source: ./nginx/nginx.conf
+              target: /etc/nginx/nginx.conf
+              read_only: true
+            - type: bind
+              source: ./nginx/conf.d
+              target: /etc/nginx/conf.d
+              read_only: true
+        networks:
+            - efk
+        depends_on:
+            - kibana
+#        logging:
+#            driver: "json-file"
+#            options:
+#                max-size: "100M"
+#                max-file: "2"
+        logging:
+            driver: fluentd
+            options:
+                fluentd-address: localhost:24224
+                fluentd-async-connect: 'true'
+                fluentd-retry-wait: '1s'
+                fluentd-max-retries: '30'
+                tag: efk.nginx
 
 networks:
     efk:
