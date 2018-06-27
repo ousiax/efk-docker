@@ -4,3 +4,5 @@ ELASTICSEARCH_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:6.3.0
 KIBANA_IMAGE=docker.elastic.co/kibana/kibana-oss:6.3.0
 FLUENTD_IMAGE=qqbuby/fluentd:v1.2-es
 NGINX_IMAGE=nginx:1.13
+
+LOG_OPT_TAG_PREFIX=alpha
