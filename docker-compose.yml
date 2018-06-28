@@ -5,6 +5,7 @@ services:
         image: ${ELASTICSEARCH_IMAGE}
         restart: always
         environment:
+            - 'node.name=HEYJUDE'
             - 'discovery.type=single-node'
             - 'bootstrap.memory_lock=true'
             - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
@@ -47,7 +48,7 @@ services:
     fluentd:
         image: ${FLUENTD_IMAGE}
         ports:
-            - 24224:24224
+            - 127.0.0.1:24224:24224
 #            - 24224:24224/udp
         volumes:
             - ./fluentd/etc:/fluentd/etc
@@ -58,7 +59,7 @@ services:
         image: ${NGINX_IMAGE}
         restart: always
         ports:
-            - 8080:80
+            - 80:80
         volumes:
             - type: bind
               source: ./nginx/nginx.conf
