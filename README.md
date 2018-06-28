@@ -4,72 +4,85 @@ version: '2.4'
 services:
     elasticsearch:
         image: ${ELASTICSEARCH_IMAGE}
+        restart: always
         environment:
+            - 'node.name=HEYJUDE'
             - 'discovery.type=single-node'
             - 'bootstrap.memory_lock=true'
             - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
-#        ports:
-#            - 9200:9200
+        ports:
+            - 9200:9200
 #            - 9300:9300
         volumes:
             - type: bind
               source: /var/lib/elasticsearch
               target: /usr/share/elasticsearch/data
         networks:
-            - efk
-        depends_on:
-            - fluentd
-#        logging:
-#            driver: "json-file"
-#            options:
-#                max-size: "500M"
-#                max-file: "2"
+            - net
         logging:
             driver: fluentd
             options:
                 fluentd-address: localhost:24224
                 fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s' 
+                fluentd-retry-wait: '1s'
                 fluentd-max-retries: '30'
-                tag: efk.elasticsearch
+                tag: ${LOG_OPT_TAG_PREFIX}.efk.elasticsearch
 
     kibana:
         image: ${KIBANA_IMAGE}
-        ports:
-            - 5601:5601
+        restart: always
+#        ports:
+#            - 5601:5601
         networks:
-            - efk
+            - net
         depends_on:
             - elasticsearch
-#        logging:
-#            driver: "json-file"
-#            options:
-#                max-size: "500M"
-#                max-file: "2"
         logging:
             driver: fluentd
             options:
                 fluentd-address: localhost:24224
                 fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s' 
+                fluentd-retry-wait: '1s'
                 fluentd-max-retries: '30'
-                tag: efk.kibana
+                tag: ${LOG_OPT_TAG_PREFIX}.efk.kibana
 
     fluentd:
         image: ${FLUENTD_IMAGE}
         ports:
-            - 24224:24224
+            - 127.0.0.1:24224:24224
 #            - 24224:24224/udp
         volumes:
             - ./fluentd/etc:/fluentd/etc
         networks:
-            - efk
+            - net
 
+    nginx:
+        image: ${NGINX_IMAGE}
+        restart: always
+        ports:
+            - 80:80
+        volumes:
+            - type: bind
+              source: ./nginx/nginx.conf
+              target: /etc/nginx/nginx.conf
+              read_only: true
+            - type: bind
+              source: ./nginx/conf.d
+              target: /etc/nginx/conf.d
+              read_only: true
+        networks:
+            - net
+        depends_on:
+            - kibana
+        logging:
+            driver: fluentd
+            options:
+                fluentd-address: localhost:24224
+                fluentd-async-connect: 'true'
+                fluentd-retry-wait: '1s'
+                fluentd-max-retries: '30'
+                tag: ${LOG_OPT_TAG_PREFIX}.efk.nginx
 networks:
-    efk:
+    net:
         driver: bridge
 ```
-
-- - -
-
-RE: Exploring fluentd via EFK Stack for Docker Logging, [http://kelonsoftware.com/fluentd-docker-logging/](http://kelonsoftware.com/fluentd-docker-logging/)
