@@ -47,8 +47,6 @@ services:
           - 2020:2020
           - 24224:24224
         volumes:
-          - /var/log/containers:/var/log/containers:ro
-          - /var/log:/var/log:rw
           - ./conf/:/etc/fluent-bit/:ro
         networks:
           - local
