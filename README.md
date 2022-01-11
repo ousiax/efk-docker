@@ -1,3 +1,5 @@
+REF: https://blog.codefarm.me/2018/06/29/elasticsearch-fluentd-kibana-docker-compose/
+
 ```yml
 version: "2.4"
 services:
