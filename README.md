@@ -6,13 +6,13 @@ services:
         restart: on-failure
         mem_limit: 2g
         environment:
-            - discovery.type=single-node
+          - discovery.type=single-node
         ports:
           - 9200
         volumes:
-            - /var/lib/elasticsearch:/usr/share/elasticsearch/data
+          - /var/lib/elasticsearch:/usr/share/elasticsearch/data
         networks:
-            - local
+          - local
         depends_on:
           - fluent-bit
         logging:
@@ -48,8 +48,6 @@ services:
           - 2020:2020
           - 24224:24224
         volumes:
-          - /var/log/containers:/var/log/containers:ro
-          - /var/log:/var/log:rw
           - ./conf/:/etc/fluent-bit/:ro
         networks:
           - local
