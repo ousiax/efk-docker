@@ -1,88 +1,63 @@
 ```yml
----
-version: '2.4'
+version: "2.4"
 services:
     elasticsearch:
-        image: ${ELASTICSEARCH_IMAGE}
-        restart: always
+        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+        restart: on-failure
+        mem_limit: 2g
         environment:
-            - 'node.name=HEYJUDE'
-            - 'discovery.type=single-node'
-            - 'bootstrap.memory_lock=true'
-            - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
+            - discovery.type=single-node
         ports:
-            - 9200:9200
-#            - 9300:9300
+          - 9200
         volumes:
-            - type: bind
-              source: /var/lib/elasticsearch
-              target: /usr/share/elasticsearch/data
+            - /var/lib/elasticsearch:/usr/share/elasticsearch/data
         networks:
-            - net
+            - local
+        depends_on:
+          - fluent-bit
         logging:
-            driver: fluentd
-            options:
-                fluentd-address: localhost:24224
-                fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s'
-                fluentd-max-retries: '30'
-                tag: ${LOG_OPT_TAG_PREFIX}.efk.elasticsearch
-
+          driver: fluentd
+          options:
+            tag: efk.es
     kibana:
-        image: ${KIBANA_IMAGE}
-        restart: always
-#        ports:
-#            - 5601:5601
-        networks:
-            - net
-        depends_on:
-            - elasticsearch
-        logging:
-            driver: fluentd
-            options:
-                fluentd-address: localhost:24224
-                fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s'
-                fluentd-max-retries: '30'
-                tag: ${LOG_OPT_TAG_PREFIX}.efk.kibana
-
-    fluentd:
-        image: ${FLUENTD_IMAGE}
+        image: docker.elastic.co/kibana/kibana-oss:7.10.2
+        restart: on-failure
+        mem_limit: 256m
+        environment:
+          - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
         ports:
-            - 127.0.0.1:24224:24224
-#            - 24224:24224/udp
-        volumes:
-            - ./fluentd/etc:/fluentd/etc
+          - 5601:5601
         networks:
-            - net
-
-    nginx:
-        image: ${NGINX_IMAGE}
-        restart: always
-        ports:
-            - 80:80
-        volumes:
-            - type: bind
-              source: ./nginx/nginx.conf
-              target: /etc/nginx/nginx.conf
-              read_only: true
-            - type: bind
-              source: ./nginx/conf.d
-              target: /etc/nginx/conf.d
-              read_only: true
-        networks:
-            - net
+          - local
         depends_on:
-            - kibana
+          - fluent-bit
+          - elasticsearch
         logging:
-            driver: fluentd
-            options:
-                fluentd-address: localhost:24224
-                fluentd-async-connect: 'true'
-                fluentd-retry-wait: '1s'
-                fluentd-max-retries: '30'
-                tag: ${LOG_OPT_TAG_PREFIX}.efk.nginx
+          driver: fluentd
+          options:
+            tag: efk.kibana
+    fluent-bit:
+        image: fluent/fluent-bit:1.8
+        command:
+          - /fluent-bit/bin/fluent-bit
+          - --config=/etc/fluent-bit/fluent-bit.conf
+        environment:
+            - FLB_ES_HOST=elasticsearch
+            - FLB_ES_PORT=9200
+        ports:
+          - 2020:2020
+          - 24224:24224
+        volumes:
+          - /var/log/containers:/var/log/containers:ro
+          - /var/log:/var/log:rw
+          - ./conf/:/etc/fluent-bit/:ro
+        networks:
+          - local
+        logging:
+          driver: fluentd
+          options:
+            tag: efk.fluent-bit
 networks:
-    net:
-        driver: bridge
+  local:
+    driver: bridge
 ```
