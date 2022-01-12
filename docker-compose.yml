@@ -41,10 +41,10 @@ services:
           - /fluent-bit/bin/fluent-bit
           - --config=/etc/fluent-bit/fluent-bit.conf
         environment:
-            - FLB_ES_HOST=elasticsearch
-            - FLB_ES_PORT=9200
+          - FLB_ES_HOST=elasticsearch
+          - FLB_ES_PORT=9200
         ports:
-          - 2020:2020
+          #- 2020:2020
           - 24224:24224
         volumes:
           - ./conf/:/etc/fluent-bit/:ro
