@@ -1,6 +1,6 @@
 See the original post at https://blog.codefarm.me/2018/06/29/elasticsearch-fluentd-kibana-docker-compose/
 
-TIP: For the cluster-wide logging solution on Kubernetes, see post at https://blog.codefarm.me/2022/01/07/kubernetes-logging/
+> For the cluster-wide logging solution on Kubernetes, see post at https://blog.codefarm.me/2022/01/07/kubernetes-logging/
 
 [source,yaml]
 ----
