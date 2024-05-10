@@ -1,12 +1,16 @@
 services:
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
         restart: on-failure
-        mem_limit: 2g
+        mem_limit: 1g
         environment:
-          - discovery.type=single-node
+          - discovery.type=single-node                  # single-node cluster
+          - xpack.security.enabled=false                # disable password security
+          - xpack.security.http.ssl.enabled=false       # disable tls/ssl encryption
+          - xpack.security.transport.ssl.enabled=false  # disable tls/ssl encryption
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
         ports:
-          - 9200
+          - 9200:9200
         volumes:
           - /var/lib/elasticsearch:/usr/share/elasticsearch/data
         networks:
@@ -18,11 +22,12 @@ services:
           options:
             tag: efk.es
     kibana:
-        image: docker.elastic.co/kibana/kibana-oss:7.10.2
+        image: docker.elastic.co/kibana/kibana:8.13.4
         restart: on-failure
-        mem_limit: 256m
+        mem_limit: 1g
         environment:
           - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+          - SERVER_HEAP_SIZE=512mm
         ports:
           - 5601:5601
         networks:
